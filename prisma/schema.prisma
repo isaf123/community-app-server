@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  user_id    Int      @id @default(autoincrement())
+  username   String
+  password   String
+  name       String
+  created_at DateTime @default(now())
+  post       Post[]
+
+  @@map("users")
+}
+
+model Post {
+  post_id    Int       @id @default(autoincrement())
+  user_id    Int
+  title      String
+  content    String
+  tags       String
+  created_at DateTime  @default(now())
+  User       User      @relation(fields: [user_id], references: [user_id])
+  Comment    Comment[]
+  Like       Like[]
+
+  @@map("post")
+}
+
+model Comment {
+  comment_id Int      @id @default(autoincrement())
+  post_id    Int
+  content    String
+  created_at DateTime @default(now())
+  Post       Post     @relation(fields: [post_id], references: [post_id])
+  Like       Like[]
+
+  @@map("comment")
+}
+
+model Like {
+  like_id    Int      @id @default(autoincrement())
+  likedBy    Int
+  post_id    Int?
+  comment_id Int?
+  Post       Post?    @relation(fields: [post_id], references: [post_id])
+  Comment    Comment? @relation(fields: [comment_id], references: [comment_id])
+
+  @@map("like")
+}
+
+model Tags {
+  tags_id    Int      @id @default(autoincrement())
+  tag        String
+  created_at DateTime @default(now())
+
+  @@map("tags")
+}
