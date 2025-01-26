@@ -15,65 +15,7 @@
 $ npm install
 ```
 
-## API DOCUMENTATION
-### Register User
 
-Endpoint : POST /users
-
-Request Body :
-
-```json
-{
-  "username" : "soni",
-  "password" : "secret",
-  "name" : "soni w"
-}
-```
-
-Response Body (Success) : 
-```json
-{
-    "username" : "soni",
-    "name" : "soni w"
-}
-```
-Response Body (Failed) :
-
-```json
-{
-  "errors" : "Username already registered"
-}
-```
-## Login User
-
-Endpoint : POST /api/users/login
-
-Request Body :
-
-```json
-{
-  "username" : "soni",
-  "password" : "secret"
-}
-```
-
-Response Body (Success) :
-
-```json
-{
-    "username" : "soni",
-    "name" : "soni w",
-    "token" : "session_id_generated"
-}
-```
-
-Response Body (Failed) :
-
-```json
-{
-  "errors" : "Username or password is wrong"
-}
-```
 
 
 ## Compile and run the project

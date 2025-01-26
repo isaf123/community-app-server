@@ -12,14 +12,13 @@ export class ErrorFilter implements ExceptionFilter {
     const response = host.switchToHttp().getResponse();
     if (exception instanceof HttpException) {
       response.status(exception.getStatus()).json({
-        errors: exception.getResponse(),
+        error: exception.getResponse(),
       });
     } else if (exception instanceof ZodError) {
       const validationError = exception.errors[0].message;
 
       response.status(400).json({
-        error: 'Validation error',
-        message: validationError,
+        error: validationError,
       });
     } else {
       response.status(500).json({

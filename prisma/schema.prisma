@@ -14,12 +14,16 @@ datasource db {
 }
 
 model User {
-  user_id    Int      @id @default(autoincrement())
-  username   String
-  password   String
-  name       String
-  created_at DateTime @default(now())
-  post       Post[]
+  user_id      Int       @id @default(autoincrement())
+  username     String
+  password     String
+  name         String
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  login_failed Int       @default(0)
+  post         Post[]
+  like         Like[]
+  comment      Comment[]
 
   @@map("users")
 }
@@ -40,24 +44,28 @@ model Post {
 
 model Comment {
   comment_id Int      @id @default(autoincrement())
+  user_id    Int
   post_id    Int
   content    String
   created_at DateTime @default(now())
   Post       Post     @relation(fields: [post_id], references: [post_id])
   Like       Like[]
+  User       User     @relation(fields: [user_id], references: [user_id])
 
   @@map("comment")
 }
 
 model Like {
   like_id    Int      @id @default(autoincrement())
-  likedBy    Int
+  user_id    Int
   post_id    Int?
+  created_at DateTime @default(now())
   comment_id Int?
   Post       Post?    @relation(fields: [post_id], references: [post_id])
   Comment    Comment? @relation(fields: [comment_id], references: [comment_id])
+  User       User     @relation(fields: [user_id], references: [user_id])
 
-  @@map("like")
+  @@map("postlike")
 }
 
 model Tags {
