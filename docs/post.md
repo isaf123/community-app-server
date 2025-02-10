@@ -12,7 +12,7 @@ Request Body :
 {
   "title" : "Food Choice",
   "content" : "Pizza is a beloved dish enjoyed worldwide, known for its versatility and endless topping options. Whether it’s a classic Margherita, a meat lover’s delight, or a veggie-packed creation, pizza satisfies every craving. Its crispy crust, rich tomato sauce",
-  "tags" : "hobby,food,culinary,holiday"
+  "tags" : ["hobb","food","culinary","holiday"]
 }
 ```
 

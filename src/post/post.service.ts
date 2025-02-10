@@ -5,7 +5,7 @@ import { PostValidation } from './post.validation';
 import { ValidationService } from 'src/common/validation.service';
 import { Prisma } from '@prisma/client';
 import * as jwt from 'jsonwebtoken';
-import { response } from 'express';
+import { createTagsArray } from 'src/helper/text';
 
 @Injectable()
 export class PostService {
@@ -16,14 +16,36 @@ export class PostService {
   async CreatePostRequest(token: string, request: CreatePostRequest) {
     this.validationService.validate(PostValidation.create, request);
     const checkToken = jwt.verify(token, 'secret') as jwt.JwtPayload;
-    const tags = request.tags.join(',');
-    const response = await this.prismaService.post.create({
-      data: {
-        user_id: checkToken.id,
-        title: request.title,
-        content: request.content,
-        tags,
+    const lowerCaseTag = request.tags.map((val) => {
+      return val.toLowerCase().replace(/\s+/g, '');
+    });
+
+    const findTags = await this.prismaService.tags.findMany({
+      where: {
+        tag: { in: lowerCaseTag },
       },
+      select: { tag: true },
+    });
+
+    const tagsInput = createTagsArray(lowerCaseTag, findTags);
+
+    const tags = request.tags.join(',');
+    const response = await this.prismaService.$transaction(async (tx) => {
+      await tx.tags.createMany({
+        data: tagsInput,
+      });
+      const date = new Date();
+
+      const result = await this.prismaService.post.create({
+        data: {
+          user_id: checkToken.id,
+          title: request.title,
+          content: request.content,
+          tags,
+          create_date: date.toISOString().split('T')[0],
+        },
+      });
+      return result;
     });
     return response;
   }
@@ -62,6 +84,10 @@ export class PostService {
     return response;
   }
 
+  async getTagList() {
+    return this.prismaService.tags.findMany();
+  }
+
   async LikeUnLikePost(token: string, request: number) {
     const checkToken = jwt.verify(token, 'secret') as jwt.JwtPayload;
     const post_id = Number(request);
@@ -72,7 +98,7 @@ export class PostService {
       },
     });
     if (!findLikePost) {
-      const response = await this.prismaService.like.create({
+      await this.prismaService.like.create({
         data: {
           post_id,
           user_id: checkToken.id,
@@ -80,7 +106,7 @@ export class PostService {
       });
       return 'like post success';
     } else {
-      const response = await this.prismaService.like.delete({
+      await this.prismaService.like.delete({
         where: {
           like_id: findLikePost.like_id,
         },

@@ -18,6 +18,7 @@ model User {
   username     String
   password     String
   name         String
+  create_date  String?
   created_at   DateTime  @default(now())
   updated_at   DateTime  @updatedAt
   login_failed Int       @default(0)
@@ -28,16 +29,28 @@ model User {
   @@map("users")
 }
 
+model Admin {
+  admin_id   Int      @id @default(autoincrement())
+  adminname  String
+  password   String
+  name       String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("admin")
+}
+
 model Post {
-  post_id    Int       @id @default(autoincrement())
-  user_id    Int
-  title      String
-  content    String
-  tags       String
-  created_at DateTime  @default(now())
-  User       User      @relation(fields: [user_id], references: [user_id])
-  Comment    Comment[]
-  Like       Like[]
+  post_id     Int       @id @default(autoincrement())
+  user_id     Int
+  title       String
+  content     String
+  tags        String
+  create_date String?
+  created_at  DateTime  @default(now())
+  User        User      @relation(fields: [user_id], references: [user_id])
+  Comment     Comment[]
+  Like        Like[]
 
   @@map("post")
 }
@@ -48,7 +61,7 @@ model Comment {
   post_id    Int
   content    String
   created_at DateTime @default(now())
-  Post       Post     @relation(fields: [post_id], references: [post_id])
+  Post       Post     @relation(fields: [post_id], references: [post_id], onDelete: Cascade)
   Like       Like[]
   User       User     @relation(fields: [user_id], references: [user_id])
 
@@ -61,8 +74,8 @@ model Like {
   post_id    Int?
   created_at DateTime @default(now())
   comment_id Int?
-  Post       Post?    @relation(fields: [post_id], references: [post_id])
-  Comment    Comment? @relation(fields: [comment_id], references: [comment_id])
+  Post       Post?    @relation(fields: [post_id], references: [post_id], onDelete: Cascade)
+  Comment    Comment? @relation(fields: [comment_id], references: [comment_id], onDelete: Cascade)
   User       User     @relation(fields: [user_id], references: [user_id])
 
   @@map("postlike")

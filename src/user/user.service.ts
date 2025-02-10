@@ -3,7 +3,7 @@ import { PrismaService } from 'src/common/prisma.service';
 import { ValidationService } from 'src/common/validation.service';
 import { UserValidation } from './user.validation';
 import { LoginUserRequest, RegisterUserRequest } from 'model/user.model';
-import hashPassword from 'src/helper/hashpassword';
+import { hashPassword } from 'src/helper/hashpassword';
 import { compareSync } from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 @Injectable()
@@ -24,12 +24,14 @@ export class UserService {
       throw new HttpException('username already exist', 400);
     }
     const hash = await hashPassword(request.password);
+    const date = new Date();
 
     const user = await this.prismaService.user.create({
       data: {
         name: request.name,
         username: request.username,
         password: hash,
+        create_date: date.toISOString().split('T')[0],
       },
     });
     return {
@@ -49,13 +51,12 @@ export class UserService {
         username: request.username,
       },
     });
-    console.log('cek');
     if (!findUser) throw new HttpException('acccount not exist', 400);
     const nowDate = new Date();
     const suspendDate = new Date(findUser.updated_at);
     suspendDate.setDate(suspendDate.getDate() + 2);
     const differentDate = nowDate.getTime() > suspendDate.getTime();
-    // melakukan rest limit login failed jika sudah lebih dari 3 hari
+
     if (differentDate) {
       await this.prismaService.user.update({
         where: {
@@ -79,13 +80,14 @@ export class UserService {
       });
 
       const token = jwt.sign(
-        { id: findUser.user_id, username: findUser.username },
+        { id: findUser.user_id, username: findUser.username, role: 'user' },
         process.env.JWT_KEY || 'secret',
       );
 
       return {
         username: findUser.username,
         token,
+        role: 'user',
       };
     }
 
@@ -96,6 +98,7 @@ export class UserService {
       const trySignin = await this.prismaService.user.findFirst({
         where: { username: request.username },
       });
+
       if (!trySignin) throw new HttpException('account not exist', 400);
 
       await this.prismaService.user.update({
