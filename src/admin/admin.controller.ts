@@ -14,7 +14,6 @@ import {
   UpdatePostRequest,
 } from 'model/admin.model';
 import { Auth } from 'src/common/auth.decorator';
-import e from 'express';
 
 @Controller('/admin')
 export class AdminController {
